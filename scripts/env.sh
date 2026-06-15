@@ -23,29 +23,26 @@ LITELLM_CONFIG="${LITELLM_CONFIG:-$PROJECT_ROOT/litellm/litellm_config.yaml}"
 CONDA_HOME="${CONDA_HOME:-$HOME/miniconda3}"
 CONDA_ENV="${CONDA_ENV:-serving}"
 
-# --- 모델 레지스트리 --------------------------------------------------------
-# MODEL_KEY 로 모델 선택. restart_server.sh 는 첫 인자로도 받음 (인자가 최우선).
-#   - 인자/MODEL_KEY 가 모델 폴더명(MODEL_NAME)과 서빙명(SERVED_NAME)을 "직접" 결정.
-#     (예전처럼 MODEL_NAME 을 env 로 넘겨받지 않음 → 셸에 남은 값으로 오염되는 버그 차단)
-#   - 키 목록:
-#       deepseek (=deepseek-v32-awq)   : DeepSeek-V3.2 AWQ INT4   (H200/SM90 타깃, MLA→SM120 ✗)
-#       deepseek-nvfp4 (=…-nvfp4)      : DeepSeek-V3.2 NVFP4      (B200/SM100)
-#       qwen32 (=qwen3-32b-fp8)        : Qwen3-32B FP8           (SM120 OK)
-#       qwen27 (=qwen3.6-27b)          : Qwen3.6-27B bf16 dense  (SM120 OK)
-# PROFILE 은 하위호환 별칭. 새 코드는 MODEL_KEY 사용.
+# --- 모듈 로드: HW 감지 / 모델 레지스트리 / 호환성 규칙 (함수 정의만) ----------
+# shellcheck source=lib/detect_hw.sh
+source "$_ENV_SH_DIR/lib/detect_hw.sh"
+# shellcheck source=registry/models.sh
+source "$_ENV_SH_DIR/registry/models.sh"
+# shellcheck source=registry/compat_rules.sh
+source "$_ENV_SH_DIR/registry/compat_rules.sh"
+
+# --- 모델 선택 (레지스트리 조회) --------------------------------------------
+# MODEL_KEY 로 선택. restart_server.sh 는 첫 인자로도 받음 (인자가 최우선).
+#   model_lookup 이 MODEL_NAME/SERVED_NAME/MODEL_ARCH/MODEL_QUANT/파서를 "직접" 설정
+#   → 셸에 남은 MODEL_NAME 등으로 오염되지 않음. 모델 추가는 registry/models.sh 에서.
+# PROFILE 은 하위호환 별칭.
 MODEL_KEY="${MODEL_KEY:-${PROFILE:-deepseek}}"
-case "$MODEL_KEY" in
-  deepseek|deepseek-v32-awq)       MODEL_NAME="DeepSeek-V3.2-AWQ";   SERVED_NAME="deepseek-v3.2" ;;
-  deepseek-nvfp4|deepseek-v32-nvfp4) MODEL_NAME="DeepSeek-V3.2-NVFP4"; SERVED_NAME="deepseek-v3.2" ;;
-  qwen32|qwen3-32b-fp8)            MODEL_NAME="Qwen3-32B-FP8";       SERVED_NAME="qwen3-32b" ;;
-  qwen27|qwen3.6-27b)              MODEL_NAME="Qwen3.6-27B";         SERVED_NAME="qwen3.6-27b" ;;
-  *)
-    echo "❌ env.sh: 알 수 없는 MODEL_KEY '$MODEL_KEY'" >&2
-    echo "   사용 가능: deepseek | deepseek-nvfp4 | qwen32 | qwen27" >&2
-    return 1 2>/dev/null || exit 1 ;;
-esac
+if ! model_lookup "$MODEL_KEY"; then
+  echo "❌ env.sh: 알 수 없는 MODEL_KEY '$MODEL_KEY' (사용 가능: $(model_keys))" >&2
+  return 1 2>/dev/null || exit 1
+fi
 PROFILE="$MODEL_KEY"                              # 하위호환 별칭
-MODEL_DIR="$MODELS_DIR/$MODEL_NAME"              # 폴더 경로 (키로부터 직접 산출)
+MODEL_DIR="$MODELS_DIR/$MODEL_NAME"              # 폴더 경로 (키로부터 산출)
 
 # --- SGLang / 의존성 버전 (DeepSeek-V3.2 DSA 지원: 0.5.6~0.5.9 검증됨) -------
 # 아래 핀은 sglang v0.5.9 pyproject 기준. 함께 올릴 때 4개를 같이 맞출 것.
@@ -82,5 +79,6 @@ activate_conda() {
 
 export PROJECT_ROOT SCRIPTS_DIR MODELS_DIR LOG_DIR LITELLM_CONFIG
 export CONDA_HOME CONDA_ENV MODEL_KEY PROFILE MODEL_NAME MODEL_DIR SERVED_NAME
+export MODEL_ARCH MODEL_QUANT REASONING_PARSER TOOL_PARSER
 export SGLANG_VER TORCH_VER FLASHINFER_VER SGL_KERNEL_VER
 export HOST PORT MEM_FRAC CONTEXT_LEN TP_SIZE LL_HOST LL_PORT LITELLM_MASTER_KEY
