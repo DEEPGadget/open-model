@@ -1,0 +1,67 @@
+# ============================================================================
+# LiteLLM Proxy 설정 (start_litellm.sh 가 사용하는 기본 config)
+#
+# 한 엔드포인트(기본 http://localhost:4000)에서 아래 모델을 "model" 이름으로 선택.
+# 백엔드는 로컬 SGLang 서버(:30000) 하나 — restart_server.sh <키> 로 띄운 모델만 동작.
+#   restart_server.sh deepseek → served-name=deepseek-v3.2
+#   restart_server.sh qwen32   → served-name=qwen3-32b
+#   restart_server.sh qwen27   → served-name=qwen3.6-27b
+#
+# 각 모델은 두 가지로 등록:
+#   *-oai  : openai/  프리픽스  = SGLang /v1/chat/completions (OpenAI 호환)
+#   *-anth : anthropic/ 프리픽스 = SGLang /v1/messages 로 passthrough
+#            (openai/ 로 두면 LiteLLM이 Anthropic 요청을 /v1/responses 로 바꿔 SGLang 500.
+#             anthropic/ 면 OpenAI·Anthropic 클라이언트 양쪽 호출 모두 정상 동작.)
+#
+# 호출 예 (OpenAI 호환):
+#   curl http://localhost:4000/v1/chat/completions \
+#     -H "Authorization: Bearer $LITELLM_MASTER_KEY" -H "Content-Type: application/json" \
+#     -d '{"model":"qwen3.6-27b-oai","messages":[{"role":"user","content":"안녕"}]}'
+# ============================================================================
+
+model_list:
+  # ── 로컬 SGLang: DeepSeek-V3.2 (H200 타깃) ──
+  - model_name: deepseek-v3.2-oai
+    litellm_params:
+      model: openai/deepseek-v3.2
+      api_base: http://localhost:30000/v1   # openai provider 는 /v1 필요
+      api_key: dummy                        # SGLang은 키 검증 안 함
+  - model_name: deepseek-v3.2-anth
+    litellm_params:
+      model: anthropic/deepseek-v3.2
+      api_base: http://localhost:30000      # /v1 없이 (LiteLLM이 /v1/messages 자동)
+      api_key: dummy
+
+  # ── 로컬 SGLang: Qwen3-32B-FP8 ──
+  - model_name: qwen3-32b-oai
+    litellm_params:
+      model: openai/qwen3-32b
+      api_base: http://localhost:30000/v1
+      api_key: dummy
+  - model_name: qwen3-32b-anth
+    litellm_params:
+      model: anthropic/qwen3-32b
+      api_base: http://localhost:30000
+      api_key: dummy
+
+  # ── 로컬 SGLang: Qwen3.6-27B (dense, bf16) ──
+  - model_name: qwen3.6-27b-oai
+    litellm_params:
+      model: openai/qwen3.6-27b
+      api_base: http://localhost:30000/v1
+      api_key: dummy
+  - model_name: qwen3.6-27b-anth
+    litellm_params:
+      model: anthropic/qwen3.6-27b
+      api_base: http://localhost:30000
+      api_key: dummy
+
+litellm_settings:
+  drop_params: true        # 백엔드가 모르는 파라미터는 자동 제거(호환성↑)
+  num_retries: 2           # 일시적 오류 시 재시도
+
+# 프록시 접근 키. 클라이언트가 이 키를 Bearer 로 보내야 함.
+# 하드코딩 금지 → 환경변수에서 읽음. 기동 전 설정:
+#   export LITELLM_MASTER_KEY=sk-...      (로컬 테스트면 아무 값)
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

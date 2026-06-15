@@ -1,0 +1,22 @@
+# 대용량 / 런타임 산출물 (절대 커밋 금지)
+# models/ = HF 가중치 수백 GB, logs/ = 실행 로그, *.pid = 서버 PID
+models/
+logs/
+*.pid
+*.log
+
+# 로컬 환경 / 에디터
+.claude/
+.vscode/
+.idea/
+
+# 파이썬 캐시
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# 비밀/로컬 오버라이드 (실수 커밋 방지)
+*.local
+.env
+secrets.*
