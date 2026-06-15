@@ -26,6 +26,8 @@ CONDA_ENV="${CONDA_ENV:-serving}"
 # --- 모듈 로드: HW 감지 / 모델 레지스트리 / 호환성 규칙 (함수 정의만) ----------
 # shellcheck source=lib/detect_hw.sh
 source "$_ENV_SH_DIR/lib/detect_hw.sh"
+# shellcheck source=lib/server_ctl.sh
+source "$_ENV_SH_DIR/lib/server_ctl.sh"
 # shellcheck source=registry/models.sh
 source "$_ENV_SH_DIR/registry/models.sh"
 # shellcheck source=registry/compat_rules.sh
