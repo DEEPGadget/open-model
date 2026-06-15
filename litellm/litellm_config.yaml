@@ -43,6 +43,21 @@ model_list:
       model: anthropic/qwen3-32b
       api_base: http://localhost:30000
       api_key: dummy
+  # -fast = thinking 비활성 (chat_template_kwargs.enable_thinking=false 주입)
+  - model_name: qwen3-32b-oai-fast
+    litellm_params:
+      model: openai/qwen3-32b
+      api_base: http://localhost:30000/v1
+      api_key: dummy
+      extra_body:
+        chat_template_kwargs: {enable_thinking: false}
+  - model_name: qwen3-32b-anth-fast
+    litellm_params:
+      model: anthropic/qwen3-32b
+      api_base: http://localhost:30000
+      api_key: dummy
+      extra_body:
+        chat_template_kwargs: {enable_thinking: false}
 
   # ── 로컬 SGLang: Qwen3.6-27B (dense, bf16) ──
   - model_name: qwen3.6-27b-oai
@@ -55,6 +70,21 @@ model_list:
       model: anthropic/qwen3.6-27b
       api_base: http://localhost:30000
       api_key: dummy
+  # -fast = thinking 비활성
+  - model_name: qwen3.6-27b-oai-fast
+    litellm_params:
+      model: openai/qwen3.6-27b
+      api_base: http://localhost:30000/v1
+      api_key: dummy
+      extra_body:
+        chat_template_kwargs: {enable_thinking: false}
+  - model_name: qwen3.6-27b-anth-fast
+    litellm_params:
+      model: anthropic/qwen3.6-27b
+      api_base: http://localhost:30000
+      api_key: dummy
+      extra_body:
+        chat_template_kwargs: {enable_thinking: false}
 
 litellm_settings:
   drop_params: true        # 백엔드가 모르는 파라미터는 자동 제거(호환성↑)
