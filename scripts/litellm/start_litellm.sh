@@ -14,12 +14,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../env.sh"
 
-activate_conda
+# 전용 litellm env 활성화 (sglang env 와 분리 — openai 핀 충돌 방지)
+activate_conda "$LITELLM_ENV"
 
 # litellm 설치 확인
 if ! python -c "import litellm" 2>/dev/null; then
-  echo "litellm 미설치 → 설치합니다 (litellm[proxy])..."
-  pip install "litellm[proxy]"
+  echo "❌ '$LITELLM_ENV' env 에 litellm 미설치." >&2
+  echo "   설치:  conda create -y -n $LITELLM_ENV python=3.11 && conda activate $LITELLM_ENV && pip install 'litellm[proxy]'" >&2
+  exit 1
 fi
 
 # 백엔드(SGLang) 살아있는지 먼저 확인
@@ -40,12 +42,13 @@ nohup litellm --config "$LITELLM_CONFIG" --host "$LL_HOST" --port "$LL_PORT" \
 echo "$!" > "$LOG_DIR/litellm.pid"
 echo "→ PID $! 로 기동. 확인: tail -f $LOG_FILE"
 echo ""
+# litellm config 의 model_name 은 서빙명에 -oai / -anth 접미사 (litellm_config.yaml 참조)
 echo "테스트 (OpenAI 스타일):"
 echo "  curl http://127.0.0.1:${LL_PORT}/v1/chat/completions \\"
 echo "    -H \"Authorization: Bearer \$LITELLM_MASTER_KEY\" -H 'Content-Type: application/json' \\"
-echo "    -d '{\"model\":\"${SERVED_NAME}\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}'"
+echo "    -d '{\"model\":\"${SERVED_NAME}-oai\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}'"
 echo ""
 echo "테스트 (Anthropic 스타일):"
 echo "  curl http://127.0.0.1:${LL_PORT}/v1/messages \\"
 echo "    -H \"x-api-key: \$LITELLM_MASTER_KEY\" -H 'anthropic-version: 2023-06-01' -H 'Content-Type: application/json' \\"
-echo "    -d '{\"model\":\"${SERVED_NAME}\",\"max_tokens\":64,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}'"
+echo "    -d '{\"model\":\"${SERVED_NAME}-anth\",\"max_tokens\":64,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}'"

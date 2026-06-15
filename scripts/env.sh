@@ -80,6 +80,8 @@ if [ -z "${TP_SIZE:-}" ]; then
 fi
 
 # --- LiteLLM proxy ----------------------------------------------------------
+# LiteLLM 은 sglang 과 openai 핀이 충돌하므로 "전용 env" 에 둔다 (HTTP 호출만 하니 GPU 불필요).
+LITELLM_ENV="${LITELLM_ENV:-litellm}"
 LL_HOST="${LL_HOST:-0.0.0.0}"
 LL_PORT="${LL_PORT:-4000}"
 # 프록시 마스터 키: config.yaml 은 os.environ/LITELLM_MASTER_KEY 로 읽음.
@@ -87,14 +89,16 @@ LL_PORT="${LL_PORT:-4000}"
 LITELLM_MASTER_KEY="${LITELLM_MASTER_KEY:-sk-local-test}"
 
 # --- conda 활성화 헬퍼 (각 스크립트에서 호출) --------------------------------
+# activate_conda [env]  — 인자 없으면 CONDA_ENV (sglang 서빙 env)
 activate_conda() {
+  local env="${1:-$CONDA_ENV}"
   # shellcheck disable=SC1091
   source "$CONDA_HOME/etc/profile.d/conda.sh"
-  conda activate "$CONDA_ENV"
+  conda activate "$env"
 }
 
 export PROJECT_ROOT SCRIPTS_DIR MODELS_DIR LOG_DIR LITELLM_CONFIG
 export CONDA_HOME CONDA_ENV MODEL_KEY PROFILE MODEL_NAME MODEL_DIR SERVED_NAME
 export MODEL_ARCH MODEL_QUANT REASONING_PARSER TOOL_PARSER
 export SGLANG_CHANNEL SGLANG_VER TORCH_VER FLASHINFER_VER SGL_KERNEL_VER TORCH_CUDA SGLANG_MANUAL_FLASHINFER
-export HOST PORT MEM_FRAC CONTEXT_LEN TP_SIZE LL_HOST LL_PORT LITELLM_MASTER_KEY
+export HOST PORT MEM_FRAC CONTEXT_LEN TP_SIZE LITELLM_ENV LL_HOST LL_PORT LITELLM_MASTER_KEY
