@@ -2,7 +2,7 @@
 # ============================================================================
 # 전체 환경 셋업 — sglang 서빙 env + litellm proxy env 를 각각 구성
 #
-#   1) sglang  → $CONDA_ENV (기본 serving)   : sglang 0.5.13 + torch/flashinfer
+#   1) sglang  → $CONDA_ENV (기본 sglang)   : sglang 0.5.13 + torch/flashinfer
 #   2) litellm → $LITELLM_ENV (기본 litellm) : litellm[proxy]
 #   두 env 를 분리하는 이유: openai 버전 핀이 서로 충돌하기 때문.
 #

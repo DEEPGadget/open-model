@@ -22,7 +22,7 @@ LITELLM_CONFIG="${LITELLM_CONFIG:-$PROJECT_ROOT/litellm/litellm_config.yaml}"
 # --- conda ------------------------------------------------------------------
 # 통합 env 구성: CONDA_ENV = sglang 서빙(0.5.13),  LITELLM_ENV = litellm proxy
 CONDA_HOME="${CONDA_HOME:-$HOME/miniconda3}"
-CONDA_ENV="${CONDA_ENV:-serving}"
+CONDA_ENV="${CONDA_ENV:-sglang}"
 
 # --- 모듈 로드: HW 감지 / 모델 레지스트리 / 호환성 규칙 (함수 정의만) ----------
 # shellcheck source=lib/detect_hw.sh

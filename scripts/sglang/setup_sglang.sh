@@ -2,12 +2,12 @@
 # ============================================================================
 # SGLang 설치 (sglang 서빙 env, 0.5.13 단일)
 #
-#   대상 env  : $CONDA_ENV (기본 serving)
+#   대상 env  : $CONDA_ENV (기본 sglang)
 #   버전      : sglang 0.5.13 / torch 2.11.0 (cu130) / flashinfer[cu13] 0.6.12
 #   설치순서  : torch 먼저(정확버전·CUDA 인덱스) → sglang[all] (resolver 가 flashinfer 정확핀 사용)
 #
 # 사용법:
-#   bash scripts/sglang/setup_sglang.sh              # 기본 serving env
+#   bash scripts/sglang/setup_sglang.sh              # 기본 sglang env
 #   RECREATE=1 bash scripts/sglang/setup_sglang.sh   # 기존 env 삭제 후 재생성(클린)
 #   CONDA_ENV=other bash scripts/sglang/setup_sglang.sh
 # ============================================================================
