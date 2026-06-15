@@ -179,6 +179,10 @@ MODEL_KEY=<키> bash scripts/healthcheck.sh      # health + 스모크 테스트
 
 ---
 
+## 문서
+- [시퀀스/컨텍스트 길이와 VRAM 조절 옵션](doc/sequence-and-vram.md) — max sequence 의 4개 층위,
+  KV 캐시 계산, 조절 가능한 모든 SGLang 노브, RTX 5090 32GB 맞춤 가이드.
+
 ## 참고 / 한계
 - **H200 의 DeepSeek-V3.2(MLA·DSA)** 는 별도 H200 환경에서 검증 예정 (SM90 커널 지원 → 정상 예상).
 - 모든 HF 모델을 커버하진 못한다. 새 모델/아키텍처는 구동하며 에러를 만나면 `models.sh`(정체성) +
