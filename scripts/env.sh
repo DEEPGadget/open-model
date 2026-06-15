@@ -20,6 +20,7 @@ LOG_DIR="${LOG_DIR:-$PROJECT_ROOT/logs}"
 LITELLM_CONFIG="${LITELLM_CONFIG:-$PROJECT_ROOT/litellm/litellm_config.yaml}"
 
 # --- conda ------------------------------------------------------------------
+# 통합 env 구성: CONDA_ENV = sglang 서빙(0.5.13),  LITELLM_ENV = litellm proxy
 CONDA_HOME="${CONDA_HOME:-$HOME/miniconda3}"
 CONDA_ENV="${CONDA_ENV:-serving}"
 
@@ -46,26 +47,14 @@ fi
 PROFILE="$MODEL_KEY"                              # 하위호환 별칭
 MODEL_DIR="$MODELS_DIR/$MODEL_NAME"              # 폴더 경로 (키로부터 산출)
 
-# --- SGLang / 의존성 버전 (채널 선택) ---------------------------------------
-# SGLANG_CHANNEL 로 버전 세트 선택. 각 핀은 해당 sglang 버전 pyproject 기준.
-#   stable = 0.5.9  : DeepSeek-V3.2(H200) 검증 완료. cu129. flashinfer 수동 설치(--no-deps).
-#   next   = 0.5.13 : SM120 GDN/FP8 수정 + linear-attn-decode 플래그. cu130(드라이버 CUDA13).
-#                     flashinfer[cu13] 정확핀 → resolver 에 맡김(수동설치 off).
-# 개별 변수(SGLANG_VER 등)를 직접 주면 그게 우선.
-SGLANG_CHANNEL="${SGLANG_CHANNEL:-stable}"
-case "$SGLANG_CHANNEL" in
-  stable)
-    SGLANG_VER="${SGLANG_VER:-0.5.9}";  TORCH_VER="${TORCH_VER:-2.9.1}"
-    FLASHINFER_VER="${FLASHINFER_VER:-0.6.3}";  SGL_KERNEL_VER="${SGL_KERNEL_VER:-0.3.21}"
-    TORCH_CUDA="${TORCH_CUDA:-cu129}";  SGLANG_MANUAL_FLASHINFER="${SGLANG_MANUAL_FLASHINFER:-1}" ;;
-  next)
-    SGLANG_VER="${SGLANG_VER:-0.5.13}"; TORCH_VER="${TORCH_VER:-2.11.0}"
-    FLASHINFER_VER="${FLASHINFER_VER:-0.6.12}"; SGL_KERNEL_VER="${SGL_KERNEL_VER:-}"
-    TORCH_CUDA="${TORCH_CUDA:-cu130}";  SGLANG_MANUAL_FLASHINFER="${SGLANG_MANUAL_FLASHINFER:-0}" ;;
-  *)
-    echo "❌ env.sh: 알 수 없는 SGLANG_CHANNEL '$SGLANG_CHANNEL' (stable|next)" >&2
-    return 1 2>/dev/null || exit 1 ;;
-esac
+# --- SGLang / 의존성 버전 (0.5.13 단일) -------------------------------------
+# DeepSeek-V3.2(H200/MLA·DSA) + Qwen GDN(SM120) 을 모두 지원하는 통합 버전.
+# 핀은 sglang v0.5.13 pyproject 기준. 드라이버 CUDA13 → cu130 휠, flashinfer[cu13].
+# 개별 변수를 직접 주면 그게 우선.
+SGLANG_VER="${SGLANG_VER:-0.5.13}"
+TORCH_VER="${TORCH_VER:-2.11.0}"
+FLASHINFER_VER="${FLASHINFER_VER:-0.6.12}"
+TORCH_CUDA="${TORCH_CUDA:-cu130}"
 
 # --- SGLang 서버 ------------------------------------------------------------
 HOST="${HOST:-0.0.0.0}"
@@ -100,5 +89,5 @@ activate_conda() {
 export PROJECT_ROOT SCRIPTS_DIR MODELS_DIR LOG_DIR LITELLM_CONFIG
 export CONDA_HOME CONDA_ENV MODEL_KEY PROFILE MODEL_NAME MODEL_DIR SERVED_NAME
 export MODEL_ARCH MODEL_QUANT REASONING_PARSER TOOL_PARSER
-export SGLANG_CHANNEL SGLANG_VER TORCH_VER FLASHINFER_VER SGL_KERNEL_VER TORCH_CUDA SGLANG_MANUAL_FLASHINFER
+export SGLANG_VER TORCH_VER FLASHINFER_VER TORCH_CUDA
 export HOST PORT MEM_FRAC CONTEXT_LEN TP_SIZE LITELLM_ENV LL_HOST LL_PORT LITELLM_MASTER_KEY
