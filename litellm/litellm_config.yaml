@@ -7,6 +7,10 @@
 #   restart_server.sh qwen32   → served-name=qwen3-32b
 #   restart_server.sh qwen27   → served-name=qwen3.6-27b
 #
+# api_base 는 'localhost' 가 아니라 '127.0.0.1' 로 고정한다(IPv4 명시).
+#   'localhost' 는 오프라인(default route 없음) 기동 시 IPv6 '::1' 로 먼저 해석돼
+#   IPv4(0.0.0.0)만 바인딩한 SGLang 에 접속 실패("Connection refused ::1:30000")한다.
+#
 # 각 모델은 두 가지로 등록:
 #   *-oai  : openai/  프리픽스  = SGLang /v1/chat/completions (OpenAI 호환)
 #   *-anth : anthropic/ 프리픽스 = SGLang /v1/messages 로 passthrough
@@ -24,37 +28,37 @@ model_list:
   - model_name: deepseek-v3.2-oai
     litellm_params:
       model: openai/deepseek-v3.2
-      api_base: http://localhost:30000/v1   # openai provider 는 /v1 필요
+      api_base: http://127.0.0.1:30000/v1   # openai provider 는 /v1 필요
       api_key: dummy                        # SGLang은 키 검증 안 함
   - model_name: deepseek-v3.2-anth
     litellm_params:
       model: anthropic/deepseek-v3.2
-      api_base: http://localhost:30000      # /v1 없이 (LiteLLM이 /v1/messages 자동)
+      api_base: http://127.0.0.1:30000      # /v1 없이 (LiteLLM이 /v1/messages 자동)
       api_key: dummy
 
   # ── 로컬 SGLang: Qwen3-32B-FP8 ──
   - model_name: qwen3-32b-oai
     litellm_params:
       model: openai/qwen3-32b
-      api_base: http://localhost:30000/v1
+      api_base: http://127.0.0.1:30000/v1
       api_key: dummy
   - model_name: qwen3-32b-anth
     litellm_params:
       model: anthropic/qwen3-32b
-      api_base: http://localhost:30000
+      api_base: http://127.0.0.1:30000
       api_key: dummy
   # -fast = thinking 비활성 (chat_template_kwargs.enable_thinking=false 주입)
   - model_name: qwen3-32b-oai-fast
     litellm_params:
       model: openai/qwen3-32b
-      api_base: http://localhost:30000/v1
+      api_base: http://127.0.0.1:30000/v1
       api_key: dummy
       extra_body:
         chat_template_kwargs: {enable_thinking: false}
   - model_name: qwen3-32b-anth-fast
     litellm_params:
       model: anthropic/qwen3-32b
-      api_base: http://localhost:30000
+      api_base: http://127.0.0.1:30000
       api_key: dummy
       extra_body:
         chat_template_kwargs: {enable_thinking: false}
@@ -63,25 +67,25 @@ model_list:
   - model_name: qwen3.6-27b-oai
     litellm_params:
       model: openai/qwen3.6-27b
-      api_base: http://localhost:30000/v1
+      api_base: http://127.0.0.1:30000/v1
       api_key: dummy
   - model_name: qwen3.6-27b-anth
     litellm_params:
       model: anthropic/qwen3.6-27b
-      api_base: http://localhost:30000
+      api_base: http://127.0.0.1:30000
       api_key: dummy
   # -fast = thinking 비활성
   - model_name: qwen3.6-27b-oai-fast
     litellm_params:
       model: openai/qwen3.6-27b
-      api_base: http://localhost:30000/v1
+      api_base: http://127.0.0.1:30000/v1
       api_key: dummy
       extra_body:
         chat_template_kwargs: {enable_thinking: false}
   - model_name: qwen3.6-27b-anth-fast
     litellm_params:
       model: anthropic/qwen3.6-27b
-      api_base: http://localhost:30000
+      api_base: http://127.0.0.1:30000
       api_key: dummy
       extra_body:
         chat_template_kwargs: {enable_thinking: false}
