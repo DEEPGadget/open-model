@@ -17,6 +17,15 @@ source "$SCRIPT_DIR/../env.sh"
 # 전용 litellm env 활성화 (sglang env 와 분리 — openai 핀 충돌 방지)
 activate_conda "$LITELLM_ENV"
 
+# --- 기동 시 외부 인터넷 의존성 제거 -----------------------------------------
+# litellm 은 import 시 GitHub 에서 모델 코스트맵을 httpx 로 가져오는데(5s timeout),
+# 오프라인/DNS 지연 상태로 기동하면 이 페치가 init 을 오염시켜 이후 백엔드 호출이
+# "APIConnectionError: Connection error." 로 떨어지는 현상이 있었다(기동 시점 상태가
+# 프로세스 수명 내내 고정됨). 아래 3개로 startup 시 외부 호출을 전부 차단한다.
+export LITELLM_LOCAL_MODEL_COST_MAP="True"          # GitHub 코스트맵 페치 끔 → 번들 백업만
+export NO_PROXY="${NO_PROXY:-localhost,127.0.0.1,0.0.0.0}"   # 백엔드(localhost)는 프록시 우회
+export no_proxy="${no_proxy:-localhost,127.0.0.1,0.0.0.0}"
+
 # litellm 설치 확인
 if ! python -c "import litellm" 2>/dev/null; then
   echo "❌ '$LITELLM_ENV' env 에 litellm 미설치." >&2

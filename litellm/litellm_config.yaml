@@ -89,6 +89,7 @@ model_list:
 litellm_settings:
   drop_params: true        # 백엔드가 모르는 파라미터는 자동 제거(호환성↑)
   num_retries: 2           # 일시적 오류 시 재시도
+  telemetry: false         # 기동 시 외부 텔레메트리 전송 끔(오프라인 기동 안정화)
 
 # 프록시 접근 키. 클라이언트가 이 키를 Bearer 로 보내야 함.
 # 하드코딩 금지 → 환경변수에서 읽음. 기동 전 설정:
